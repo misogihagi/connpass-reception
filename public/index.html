@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>connpass Reception</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app-container">
+    <header class="header">
+      <h1>connpass<span class="highlight">Reception</span></h1>
+      <p>QRコードをかざして受付をしてください</p>
+    </header>
+
+    <main class="main-content">
+      <div class="scanner-container">
+        <video id="qr-video"></video>
+        <div class="loading-overlay hidden" id="loading-overlay">
+          <div class="spinner"></div>
+          <p>処理中...</p>
+        </div>
+      </div>
+
+      <div class="status-panel" id="status-panel">
+        <div class="status-indicator waiting" id="status-indicator">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="status-icon">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+        </div>
+        <div class="status-text">
+          <h2 id="status-title">準備完了</h2>
+          <p id="status-message">QRコードをかざして受付をしてください</p>
+        </div>
+        <button id="resume-btn" class="resume-btn hidden">受付を再開する</button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+
+</html>

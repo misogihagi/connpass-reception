@@ -1,0 +1,203 @@
+:root {
+  --bg-color: #0f172a;
+  --panel-bg: rgba(30, 41, 59, 0.7);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent: #38bdf8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+}
+
+.app-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  text-align: center;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.header .highlight {
+  color: var(--accent);
+}
+
+.header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.scanner-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  background: #000;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#qr-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* loading overlay */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.status-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  animation: fadeInUp 0.8s ease-out;
+  min-height: 140px;
+  justify-content: center;
+}
+
+.status-indicator {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  transition: all 0.4s ease;
+}
+
+.status-indicator svg {
+  width: 24px;
+  height: 24px;
+}
+
+.status-indicator.waiting { color: var(--text-secondary); }
+.status-indicator.success { background: rgba(34, 197, 94, 0.2); stroke: var(--success); color: var(--success); }
+.status-indicator.warning { background: rgba(245, 158, 11, 0.2); stroke: var(--warning); color: var(--warning); }
+.status-indicator.error { background: rgba(239, 68, 68, 0.2); stroke: var(--error); color: var(--error); }
+
+.status-text h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+}
+
+.status-text p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.status-text.success h2 { color: var(--success); }
+.status-text.warning h2 { color: var(--warning); }
+.status-text.error h2 { color: var(--error); }
+
+.resume-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.resume-btn:hover {
+  background: #0ea5e9;
+  transform: translateY(-2px);
+}
+
+.resume-btn.hidden {
+  display: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
