@@ -1,2 +1,11 @@
-# connpas-reception
-connpassのイベント運営をスムーズにするための、セルフ受付サービス
+To install dependencies:
+```sh
+bun install
+```
+
+To run:
+```sh
+bun run dev
+```
+
+open http://localhost:3000
