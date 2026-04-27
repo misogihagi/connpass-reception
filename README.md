@@ -3,25 +3,46 @@
 connpassのイベント受付をセルフ化するための、Hono（Cloudflare Workers/Node.js）ベースのWebアプリケーションです。
 
 ## 🚀 特徴
-* **高速なQR読み取り**: [qr-scanner](https://github.com/nimiq/qr-scanner) を採用し、ブラウザ上での爆速なデコードを実現。
+* **マルチデバイス対応QR読み取り**: [html5-qrcode](https://github.com/mebjas/html5-qrcode) を採用し、様々なブラウザやデバイスでの安定したスキャンを実現。
 * **エッジ対応**: [Hono](https://hono.dev/) フレームワークにより、Cloudflare Workers 等の低レイテンシ環境で動作。
 * **セッションプロキシ**: 管理者ログイン済みのCookieをサーバー側で保持し、参加者の代わりに受付URLへアクセス。
 
 ## 🛠 技術スタック
 * **Framework**: [Hono](https://hono.dev/)
-* **Frontend Library**: [qr-scanner](https://github.com/nimiq/qr-scanner) (Worker版)
+* **Frontend Library**: [html5-qrcode](https://github.com/mebjas/html5-qrcode)
+* **Backend Automation**: [Playwright](https://playwright.dev/)
 * **Runtime**: Cloudflare Workers / Node.js / Bun
+
+## 🏗 システム構成
+
+```mermaid
+flowchart TD
+    P["👤 参加者 (QRコード)"]
+    C["📱 クライアント (html5-qrcode)"]
+    S["⚙️ サーバー (Hono / Bun)"]
+    B["🤖 Playwright (Admin Session)"]
+    CP["🌐 Connpass (Official)"]
+
+    P -- "QR提示" --> C
+    C -- "デコード & 送信" --> S
+    S -- "アクセス指示" --> B
+    B -- "チェックイン代行" --> CP
+    CP -- "結果返却" --> B
+    B -- "解析結果" --> S
+    S -- "最終判定" --> C
+    C -- "結果表示" --> P
+```
 
 ## 📋 受付フロー
 
 1.  **管理者ログイン**:
-    サーバーのブラウザに、connpassの管理者アカウントでログインする。
+    サーバー起動時にブラウザが立ち上がるため、connpassの管理者アカウントでログインを完了させます（セッションは `./playwright-profile` に保存されます）。
 2.  **QRスキャン (Client)**:
-    `qr-scanner` を用いて、参加者が提示した `https://connpass.com/checkin/code/...` を読み取る。
+    `html5-qrcode` を用いて、参加者が提示した `https://connpass.com/checkin/code/...` を読み取ります。
 3.  **プロキシ実行 (Server)**:
-    読み取ったURLをエンドポイント `POST /api/checkin` へ送信。サーバーサイドがそのURLでブラウザを開き、受付を行う。
+    読み取ったURLをエンドポイント `POST /api/checkin` へ送信。サーバーサイドのPlaywrightがそのURLを開き、管理者の代わりに受付処理を代行します。
 4.  **結果判定**:
-    connpassからのレスポンスを解析し、成功（200 OK または すでに受付済み）をクライアントに返す。
+    画面上の「受付を完了しました」等のメッセージを解析し、成功（すでに受付済みを含む）をクライアントに返却します。
 
 ## 💻 セットアップ
 
@@ -37,6 +58,6 @@ bun run dev
 
 
 ## ⚠️ 注意点
-* **セキュリティ**: `qr-scanner` で読み取ったURLが `https://connpass.com/` で始まっているか、正規表現等で厳密にバリデーションしてください。
-* **UI/UX**: `qr-scanner` の `highlightScanRegion` オプションを有効にすると、読み取り範囲が可視化され、ユーザーが迷わなくなります。
-* **セッション維持**: Connpassのセッション有効期限に注意し、定期的にCookieを更新する運用を検討してください。
+* **セキュリティ**: 受付URLが `https://connpass.com/` で始まっているか、サーバー側で厳密にバリデーションしています。
+* **カメラ権限**: ブラウザのカメラ利用許可が必要です。HTTPS環境（または localhost）での実行を推奨します。
+* **セッション維持**: Connpassのセッション有効期限に注意し、ログインが切れた場合は再度サーバー側でログイン操作を行ってください。
