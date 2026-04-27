@@ -1,4 +1,5 @@
-import QrScanner from 'https://unpkg.com/qr-scanner/qr-scanner.min.js';
+// ZXingBrowser is loaded as a plain UMD script in index.html
+// and available here as the global `ZXingBrowser`.
 
 const videoElem = document.getElementById('qr-video');
 const loadingOverlay = document.getElementById('loading-overlay');
@@ -9,7 +10,7 @@ const statusMessage = document.getElementById('status-message');
 const statusTextContainer = document.querySelector('.status-text');
 const resumeBtn = document.getElementById('resume-btn');
 
-let scanner;
+let controls = null;
 let isProcessing = false;
 
 // SVG Icons
@@ -28,22 +29,27 @@ function updateStatus(state, title, message) {
   statusMessage.textContent = message;
 }
 
-async function handleScan(result) {
-  if (isProcessing) return;
+function stopScanner() {
+  if (controls) {
+    controls.stop();
+    controls = null;
+  }
+}
 
-  const url = result.data;
+async function handleScan(url) {
+  if (isProcessing) return;
 
   // Basic validation for connpass check-in URL
   if (!url.startsWith('https://connpass.com/checkin/code/')) {
     isProcessing = true;
-    scanner.stop();
-    updateStatus('error', 'Invalid QR Code', 'This is not a valid Connpass check-in QR code.');
+    stopScanner();
+    updateStatus('error', '無効なQRコード', 'Connpassの受付用QRコードではありません。');
     resumeBtn.classList.remove('hidden');
     return;
   }
 
   isProcessing = true;
-  scanner.stop();
+  stopScanner();
   loadingOverlay.classList.remove('hidden');
 
   try {
@@ -58,46 +64,74 @@ async function handleScan(result) {
 
     if (!data.success) {
       if (data.error === 'Not logged in') {
-        updateStatus('error', 'Login Required', 'Admin is not logged in on the server browser.');
+        updateStatus('error', 'ログインが必要です', 'サーバーのブラウザでまだログインされていません。');
       } else {
-        updateStatus('error', 'Error', data.error || 'Failed to process check-in.');
+        updateStatus('error', 'エラー', data.error || '受付処理に失敗しました。');
       }
     } else {
       if (data.status === 'success') {
-        updateStatus('success', 'Checked In!', 'Participant successfully checked in.');
+        updateStatus('success', '受付完了！', '参加者の受付が完了しました。');
       } else if (data.status === 'already_checked_in') {
-        updateStatus('warning', 'Already Checked In', 'This participant was already checked in.');
+        updateStatus('warning', '受付済み', 'この参加者はすでに受付されています。');
       } else {
-        updateStatus('success', 'Check-in processed', 'Response received from Connpass.');
+        updateStatus('success', '受付処理完了', 'Connpassからの応答を受信しました。');
       }
     }
   } catch (error) {
     loadingOverlay.classList.add('hidden');
-    updateStatus('error', 'Network Error', 'Failed to communicate with server.');
+    updateStatus('error', 'ネットワークエラー', 'サーバーとの通信に失敗しました。');
   }
 
   resumeBtn.classList.remove('hidden');
 }
 
+async function startScanner() {
+  const codeReader = new ZXingBrowser.BrowserQRCodeReader();
+
+  try {
+    const videoInputDevices = await ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
+
+    if (videoInputDevices.length === 0) {
+      updateStatus('error', 'カメラが見つかりません', '使用可能なカメラデバイスが検出されませんでした。');
+      return;
+    }
+
+    // Use the first available device
+    const selectedDeviceId = videoInputDevices[0].deviceId;
+    console.log(`Starting scanner with device: ${videoInputDevices[0].label} (${selectedDeviceId})`);
+
+    controls = await codeReader.decodeFromVideoDevice(
+      selectedDeviceId,
+      videoElem,
+      (result, error) => {
+        if (result && !isProcessing) {
+          handleScan(result.getText());
+        }
+        // NotFoundException fires every frame when no QR is found – ignore it
+      }
+    );
+  } catch (err) {
+    console.error('Scanner error:', err);
+    //updateStatus('error', 'カメラエラー', `エラーが発生しました: ${err.message || err}`);
+  }
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    devices.forEach((device) => {
+      updateStatus('error', 'カメラが見つかりません', `${device.kind}: ${device.label} id = ${device.deviceId}`);
+      console.log(`${device.kind}: ${device.label} id = ${device.deviceId}`);
+    });
+  } catch (err) {
+    updateStatus('error', 'カメラが見つかりません', `${err.name}: ${err.message}`);
+  }
+}
+
 resumeBtn.addEventListener('click', () => {
   resumeBtn.classList.add('hidden');
-  updateStatus('waiting', 'Ready to Scan', 'Waiting for a QR code...');
+  updateStatus('waiting', 'スキャン待機中', 'QRコードをカメラにかざしてください...');
   isProcessing = false;
-  scanner.start();
+  startScanner();
 });
 
-// Initialize Scanner
-scanner = new QrScanner(
-  videoElem,
-  result => handleScan(result),
-  {
-    highlightScanRegion: true,
-    highlightCodeOutline: true,
-    returnDetailedScanResult: true
-  }
-);
-
-scanner.start().catch(err => {
-  console.error(err);
-  updateStatus('error', 'Camera Error', err);
-});
+// Initialize
+updateStatus('waiting', 'スキャン待機中', 'QRコードをカメラにかざしてください...');
+startScanner();

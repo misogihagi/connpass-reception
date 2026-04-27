@@ -64,6 +64,7 @@ app.post('/api/checkin', async (c) => {
   }
 });
 
+app.get('/zxing-browser.min.js', serveStatic({ path: './node_modules/@zxing/browser/umd/zxing-browser.min.js' }));
 app.use('/*', serveStatic({ root: './public' }));
 
 initBrowser();
