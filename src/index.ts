@@ -22,15 +22,11 @@ async function initBrowser() {
 app.post('/api/checkin', async (c) => {
   try {
     const { url } = await c.req.json();
-    if (!url || typeof url !== 'string' || !url.startsWith('https://connpass.com/checkin/code/')) {
+    if (!url || typeof url !== 'string' || !url.startsWith('https://connpass.com/')) {
       return c.json({ success: false, error: 'Invalid URL' }, 400);
     }
 
-    if (!page) {
-      return c.json({ success: false, error: 'Browser not initialized' }, 500);
-    }
-
-    if (!context) {
+    if (!page || !context) {
       return c.json({ success: false, error: 'Browser not initialized' }, 500);
     }
 
@@ -64,7 +60,7 @@ app.post('/api/checkin', async (c) => {
   }
 });
 
-app.get('/zxing-browser.min.js', serveStatic({ path: './node_modules/@zxing/browser/umd/zxing-browser.min.js' }));
+app.get('/html5-qrcode.min.js', serveStatic({ path: './node_modules/html5-qrcode/html5-qrcode.min.js' }));
 app.use('/*', serveStatic({ root: './public' }));
 
 initBrowser();

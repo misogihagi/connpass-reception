@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "hono": "^4.12.15",
+    "html5-qrcode": "^2.3.8",
     "playwright": "^1.42.1"
   },
   "devDependencies": {

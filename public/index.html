@@ -18,7 +18,7 @@
 
     <main class="main-content">
       <div class="scanner-container">
-        <video id="qr-video"></video>
+        <div id="reader"></div>
         <div class="loading-overlay hidden" id="loading-overlay">
           <div class="spinner"></div>
           <p>処理中...</p>
@@ -36,12 +36,11 @@
           <h2 id="status-title">準備完了</h2>
           <p id="status-message">QRコードをかざして受付をしてください</p>
         </div>
-        <button id="resume-btn" class="resume-btn hidden">受付を再開する</button>
       </div>
     </main>
   </div>
 
-  <script src="/zxing-browser.min.js"></script>
+  <script src="/html5-qrcode.min.js"></script>
   <script type="module" src="/app.js"></script>
 </body>
 
